@@ -26,13 +26,13 @@ interface Mock {
   week: number;
   mockType: string;
   goal: string;
-  notes?: string;
-  scheduledAt?: number; // Unix timestamp
-  outcome?: 'pass' | 'borderline' | 'fail';
-  feedback?: string;
-  score?: number; // 1-5 rating
-  duration?: number; // minutes
-  interviewer?: string;
+  notes?: string | null;
+  scheduledAt?: number | null; // Unix timestamp
+  outcome?: 'pass' | 'borderline' | 'fail' | null;
+  feedback?: string | null;
+  score?: number | null; // 1-5 rating
+  duration?: number | null; // minutes
+  interviewer?: string | null;
   createdAt: number; // Unix timestamp
   updatedAt: number; // Unix timestamp
 }
@@ -154,11 +154,27 @@ export default function MocksPage() {
     try {
       // Optimistic update
       setMocks(prev => 
-        prev.map(mock => 
-          mock.id === selectedMock.id 
-            ? { ...mock, scheduledAt: Math.floor(new Date(scheduledAt).getTime() / 1000), interviewer, duration, updatedAt: Math.floor(Date.now() / 1000) }
-            : mock
-        )
+        prev.map(mock => {
+          if (mock.id === selectedMock.id) {
+            try {
+              const scheduledDate = new Date(scheduledAt);
+              if (isNaN(scheduledDate.valueOf())) {
+                return mock; // Don't update if invalid date
+              }
+              
+              return {
+                ...mock,
+                scheduledAt: Math.floor(scheduledDate.valueOf() / 1000),
+                interviewer,
+                duration,
+                updatedAt: Math.floor(Date.now() / 1000)
+              };
+            } catch (error) {
+              return mock; // Don't update on error
+            }
+          }
+          return mock;
+        })
       );
       
       // Persist to database
@@ -180,7 +196,7 @@ export default function MocksPage() {
       setMocks(prev => 
         prev.map(mock => 
           mock.id === selectedMock.id 
-            ? { ...mock, outcome, feedback, score, updatedAt: new Date().toISOString() }
+            ? { ...mock, outcome, feedback, score, updatedAt: Math.floor(Date.now() / 1000) }
             : mock
         )
       );

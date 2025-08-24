@@ -25,8 +25,8 @@ export const planItems = sqliteTable(
     resourcePointer: text('resource_pointer'),
     status: text('status', { enum: statusEnum }).notNull().default('todo'),
     notes: text('notes'),
-    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+    createdAt: integer('created_at').default(sql`(unixepoch())`),
+    updatedAt: integer('updated_at').default(sql`(unixepoch())`),
   },
   (table) => ({
     dateIdx: index('date_idx').on(table.date),
@@ -49,8 +49,8 @@ export const problems = sqliteTable(
     notes: text('notes'),
     status: text('status', { enum: problemStatusEnum }).notNull().default('todo'),
     timeSpentMins: integer('time_spent_mins').notNull().default(0),
-    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+    createdAt: integer('created_at').default(sql`(unixepoch())`),
+    updatedAt: integer('updated_at').default(sql`(unixepoch())`),
   },
   (table) => ({
     weekIdx: index('problems_week_idx').on(table.week),
@@ -73,8 +73,8 @@ export const oopProblems = sqliteTable(
     notes: text('notes'),
     status: text('status', { enum: problemStatusEnum }).notNull().default('todo'),
     timeSpentMins: integer('time_spent_mins').notNull().default(0),
-    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+    createdAt: integer('created_at').default(sql`(unixepoch())`),
+    updatedAt: integer('updated_at').default(sql`(unixepoch())`),
   },
   (table) => ({
     weekIdx: index('oop_problems_week_idx').on(table.week),
@@ -95,8 +95,8 @@ export const resources = sqliteTable(
     url: text('url'),
     notes: text('notes'),
     pinned: integer('pinned', { mode: 'boolean' }).notNull().default(false),
-    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+    createdAt: integer('created_at').default(sql`(unixepoch())`),
+    updatedAt: integer('updated_at').default(sql`(unixepoch())`),
   },
   (table) => ({
     weekIdx: index('resources_week_idx').on(table.week),
@@ -114,14 +114,14 @@ export const mocks = sqliteTable(
     mockType: text('mock_type').notNull(),
     goal: text('goal').notNull(),
     notes: text('notes'),
-    scheduledAt: integer('scheduled_at', { mode: 'timestamp' }),
+    scheduledAt: integer('scheduled_at'),
     outcome: text('outcome', { enum: mockOutcomeEnum }),
     feedback: text('feedback'),
     score: integer('score'), // 1-5 rating
     duration: integer('duration'), // minutes
     interviewer: text('interviewer'),
-    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+    createdAt: integer('created_at').default(sql`(unixepoch())`),
+    updatedAt: integer('updated_at').default(sql`(unixepoch())`),
   },
   (table) => ({
     weekIdx: index('mocks_week_idx').on(table.week),
@@ -142,8 +142,8 @@ export const sessions = sqliteTable(
     linkedPlanItemId: integer('linked_plan_item_id').references(() => planItems.id),
     linkedProblemId: integer('linked_problem_id').references(() => problems.id),
     linkedOopProblemId: integer('linked_oop_problem_id').references(() => oopProblems.id),
-    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+    createdAt: integer('created_at').default(sql`(unixepoch())`),
+    updatedAt: integer('updated_at').default(sql`(unixepoch())`),
   },
   (table) => ({
     dateIdx: index('sessions_date_idx').on(table.date),
@@ -156,8 +156,8 @@ export const sessions = sqliteTable(
 export const settings = sqliteTable('settings', {
   key: text('key').primaryKey(),
   value: text('value').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  createdAt: integer('created_at').default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at').default(sql`(unixepoch())`),
 });
 
 // Playbook checklists table for tracking progress in playbooks
@@ -168,8 +168,8 @@ export const playbookChecklists = sqliteTable(
     playbookName: text('playbook_name').notNull(),
     checklistItem: text('checklist_item').notNull(),
     completed: integer('completed', { mode: 'boolean' }).notNull().default(false),
-    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+    createdAt: integer('created_at').default(sql`(unixepoch())`),
+    updatedAt: integer('updated_at').default(sql`(unixepoch())`),
   },
   (table) => ({
     playbookIdx: index('playbook_checklists_playbook_idx').on(table.playbookName),

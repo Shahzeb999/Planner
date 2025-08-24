@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LLM Prep Planner - 6-Month Preparation Journey",
-  description: "Local-first web app for managing your comprehensive LLM/ML preparation plan",
+  title: "LLM Prep Planner - 6-Month Program Journey",
+  description: "Comprehensive web app for managing your LLM/ML interview preparation with structured 6-month program",
 };
 
 export default function RootLayout({

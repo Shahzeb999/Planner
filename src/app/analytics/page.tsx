@@ -65,20 +65,20 @@ export default function AnalyticsPage() {
         
         // Transform the data to match expected structure
         const transformedData = {
-          weeklyProgress: rawData.weeklyProgress.map(week => ({
+          weeklyProgress: rawData.weeklyProgress?.map(week => ({
             week: week.week,
             completed: week.completed || 0,
             total: week.total || 0,
             timeSpent: 0 // Will be calculated from sessionTime
-          })),
-          problemProgress: transformProblemData(rawData.problemsByDifficulty),
-          taskTypeDistribution: rawData.taskTypeDistribution.map(task => ({
+          })) || [],
+          problemProgress: transformProblemData(rawData.problemsByDifficulty || []),
+          taskTypeDistribution: rawData.taskTypeDistribution?.map(task => ({
             name: task.taskType,
             value: task.count,
             color: getTaskTypeColor(task.taskType)
-          })),
-          mockPerformance: transformMockData(rawData.mockPerformance),
-          studyTimeByCategory: transformSessionData(rawData.sessionTime),
+          })) || [],
+          mockPerformance: transformMockData(rawData.mockPerformance || []),
+          studyTimeByCategory: transformSessionData(rawData.sessionTime || []),
           gaps: [] // Knowledge gaps not implemented yet
         };
         
@@ -96,9 +96,17 @@ export default function AnalyticsPage() {
 
   // Helper functions to transform data
   const transformProblemData = (problemsByDifficulty: any[]) => {
+    if (!Array.isArray(problemsByDifficulty)) {
+      return [];
+    }
+    
     const weekMap: Record<number, { week: number; easy: number; medium: number; hard: number }> = {};
     
     problemsByDifficulty.forEach(item => {
+      if (!item || typeof item.week !== 'number') {
+        return;
+      }
+      
       if (!weekMap[item.week]) {
         weekMap[item.week] = { week: item.week, easy: 0, medium: 0, hard: 0 };
       }

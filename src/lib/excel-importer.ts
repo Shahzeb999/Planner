@@ -16,7 +16,7 @@ import {
   difficultyEnum
 } from '@/db/schema';
 import { z } from 'zod';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 
 // Validation schemas
 const planRowSchema = z.object({
@@ -76,7 +76,7 @@ export interface ImportSummary {
 function parseDate(dateStr: string): string {
   // Handle various date formats and convert to YYYY-MM-DD
   const date = new Date(dateStr);
-  if (isNaN(date.getTime())) {
+  if (isNaN(date.valueOf())) {
     throw new Error(`Invalid date: ${dateStr}`);
   }
   return date.toISOString().split('T')[0];
@@ -90,7 +90,7 @@ function getDayName(dateStr: string): string {
 function getWeekNumber(dateStr: string): number {
   const date = new Date(dateStr);
   const startOfYear = new Date(date.getFullYear(), 0, 1);
-  const pastDaysOfYear = (date.getTime() - startOfYear.getTime()) / 86400000;
+  const pastDaysOfYear = (date.valueOf() - startOfYear.valueOf()) / 86400000;
   return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
 }
 
@@ -169,7 +169,7 @@ export async function importExcelFile(filePath: string): Promise<ImportSummary> 
         const validatedRow = planRowSchema.parse(row);
         const originalDate = new Date(validatedRow.Date);
         
-        if (isNaN(originalDate.getTime())) {
+        if (isNaN(originalDate.valueOf())) {
           summary.plan.errors.push(`Invalid date in row: ${validatedRow.Date}`);
           continue;
         }
@@ -192,7 +192,7 @@ export async function importExcelFile(filePath: string): Promise<ImportSummary> 
     }
     
     earliestDate.setHours(0, 0, 0, 0); // Set to start of day
-    const dayOffset = Math.floor((importDate.getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24));
+    const dayOffset = Math.floor((importDate.valueOf() - earliestDate.valueOf()) / (1000 * 60 * 60 * 24));
     
     console.log(`📅 Adjusting plan dates from "${planSheetName}": Original start date was ${earliestDate.toISOString().split('T')[0]}, now starting from ${importDateString} (${dayOffset} day offset)`);
 
@@ -237,7 +237,7 @@ export async function importExcelFile(filePath: string): Promise<ImportSummary> 
         if (existing.length > 0) {
           await db
             .update(planItems)
-            .set({ ...planItem, updatedAt: Math.floor(Date.now() / 1000) })
+            .set({ ...planItem, updatedAt: sql`(unixepoch())` })
             .where(eq(planItems.id, existing[0].id));
           summary.plan.updated++;
         } else {
@@ -286,7 +286,7 @@ export async function importExcelFile(filePath: string): Promise<ImportSummary> 
         if (existing.length > 0) {
           await db
             .update(problems)
-            .set({ ...problem, updatedAt: new Date() })
+            .set({ ...problem, updatedAt: sql`(unixepoch())` })
             .where(eq(problems.id, existing[0].id));
           summary.problems.updated++;
         } else {
@@ -335,7 +335,7 @@ export async function importExcelFile(filePath: string): Promise<ImportSummary> 
         if (existing.length > 0) {
           await db
             .update(oopProblems)
-            .set({ ...oopProblem, updatedAt: new Date() })
+            .set({ ...oopProblem, updatedAt: sql`(unixepoch())` })
             .where(eq(oopProblems.id, existing[0].id));
           summary.oopProblems.updated++;
         } else {
@@ -382,7 +382,7 @@ export async function importExcelFile(filePath: string): Promise<ImportSummary> 
         if (existing.length > 0) {
           await db
             .update(resources)
-            .set({ ...resource, updatedAt: new Date() })
+            .set({ ...resource, updatedAt: sql`(unixepoch())` })
             .where(eq(resources.id, existing[0].id));
           summary.resources.updated++;
         } else {
@@ -430,7 +430,7 @@ export async function importExcelFile(filePath: string): Promise<ImportSummary> 
         if (existing.length > 0) {
           await db
             .update(mocks)
-            .set({ ...mock, updatedAt: new Date() })
+            .set({ ...mock, updatedAt: sql`(unixepoch())` })
             .where(eq(mocks.id, existing[0].id));
           summary.mocks.updated++;
         } else {
@@ -454,7 +454,7 @@ export async function importExcelFile(filePath: string): Promise<ImportSummary> 
       target: settings.key,
       set: {
         value: new Date().toISOString(),
-        updatedAt: new Date(),
+        updatedAt: sql`(unixepoch())`,
       },
     });
 

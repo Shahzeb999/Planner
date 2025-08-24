@@ -13,12 +13,14 @@ import {
   Search, 
   Settings, 
   Target,
-  Upload
+  Upload,
+  Clock
 } from 'lucide-react';
 import UserProfile from '@/components/auth/UserProfile';
 
 const navItems = [
-  { href: '/', label: 'Today', icon: Home, shortcut: 't' },
+  { href: '/home', label: 'Home', icon: Home, shortcut: 'h' },
+  { href: '/today', label: 'Today', icon: Clock, shortcut: 't' },
   { href: '/calendar', label: 'Calendar', icon: Calendar, shortcut: 'c' },
   { href: '/problems', label: 'Problems', icon: Code, shortcut: 'p' },
   { href: '/playbooks', label: 'Playbooks', icon: BookOpen, shortcut: 'r' },
@@ -44,7 +46,7 @@ export function Navigation() {
       <nav className="flex flex-col w-64 bg-gray-50 border-r border-gray-200 h-full">
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-xl font-bold text-gray-900">LLM Prep Planner</h1>
-          <p className="text-sm text-gray-600 mt-1">6-Month Preparation</p>
+          <p className="text-sm text-gray-600 mt-1">6-Month Program</p>
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-gray-500">Loading...</div>
@@ -59,7 +61,7 @@ export function Navigation() {
       <nav className="flex flex-col w-64 bg-gray-50 border-r border-gray-200 h-full">
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-xl font-bold text-gray-900">LLM Prep Planner</h1>
-          <p className="text-sm text-gray-600 mt-1">6-Month Preparation</p>
+          <p className="text-sm text-gray-600 mt-1">6-Month Program</p>
         </div>
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center text-gray-500">
@@ -80,7 +82,7 @@ export function Navigation() {
     <nav className="flex flex-col w-64 bg-gray-50 border-r border-gray-200 h-full">
       <div className="p-6 border-b border-gray-200">
         <h1 className="text-xl font-bold text-gray-900">LLM Prep Planner</h1>
-        <p className="text-sm text-gray-600 mt-1">6-Month Preparation</p>
+        <p className="text-sm text-gray-600 mt-1">6-Month Program</p>
       </div>
       
       <div className="flex-1 p-4">
@@ -88,7 +90,8 @@ export function Navigation() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || 
-              (item.href !== '/' && pathname?.startsWith(item.href));
+              (item.href !== '/' && item.href !== '/home' && pathname?.startsWith(item.href)) ||
+              (item.href === '/home' && pathname === '/');
             
             return (
               <li key={item.href}>

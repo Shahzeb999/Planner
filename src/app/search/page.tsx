@@ -103,7 +103,19 @@ export default function SearchPage() {
                         typeof a.metadata.scheduledAt === 'number' ? new Date(a.metadata.scheduledAt * 1000).toISOString() : '2025-01-01');
           const bDate = (typeof b.metadata.date === 'string' ? b.metadata.date : 
                         typeof b.metadata.scheduledAt === 'number' ? new Date(b.metadata.scheduledAt * 1000).toISOString() : '2025-01-01');
-          return new Date(bDate).getTime() - new Date(aDate).getTime();
+          
+          try {
+            const aDateObj = new Date(aDate);
+            const bDateObj = new Date(bDate);
+            
+            if (isNaN(aDateObj.valueOf()) || isNaN(bDateObj.valueOf())) {
+              return 0;
+            }
+            
+            return bDateObj.valueOf() - aDateObj.valueOf();
+          } catch (error) {
+            return 0;
+          }
         case 'title':
           return a.title.localeCompare(b.title);
         default:

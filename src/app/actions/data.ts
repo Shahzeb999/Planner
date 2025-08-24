@@ -307,21 +307,24 @@ export async function searchContent(query: string, filters?: {
 export async function updatePlanItemStatus(id: number, status: 'todo' | 'in_progress' | 'done') {
   await db
     .update(planItems)
-    .set({ status, updatedAt: Math.floor(Date.now() / 1000) })
+    .set({ 
+      status, 
+      updatedAt: sql`(unixepoch())` 
+    })
     .where(eq(planItems.id, id));
 }
 
 export async function updateProblemStatus(id: number, status: 'todo' | 'solved' | 'skipped') {
   await db
     .update(problems)
-    .set({ status, updatedAt: Math.floor(Date.now() / 1000) })
+    .set({ status, updatedAt: sql`(unixepoch())` })
     .where(eq(problems.id, id));
 }
 
 export async function updateOopProblemStatus(id: number, status: 'todo' | 'solved' | 'skipped') {
   await db
     .update(oopProblems)
-    .set({ status, updatedAt: Math.floor(Date.now() / 1000) })
+    .set({ status, updatedAt: sql`(unixepoch())` })
     .where(eq(oopProblems.id, id));
 }
 
@@ -330,7 +333,7 @@ export async function addTimeToProblam(id: number, minutes: number) {
     .update(problems)
     .set({ 
       timeSpentMins: sql`${problems.timeSpentMins} + ${minutes}`,
-      updatedAt: Math.floor(Date.now() / 1000)
+      updatedAt: sql`(unixepoch())`
     })
     .where(eq(problems.id, id));
 }
@@ -340,7 +343,7 @@ export async function addTimeToOopProblem(id: number, minutes: number) {
     .update(oopProblems)
     .set({ 
       timeSpentMins: sql`${oopProblems.timeSpentMins} + ${minutes}`,
-      updatedAt: Math.floor(Date.now() / 1000)
+      updatedAt: sql`(unixepoch())`
     })
     .where(eq(oopProblems.id, id));
 }
@@ -355,7 +358,16 @@ export async function saveSession(session: {
   linkedProblemId?: number;
   linkedOopProblemId?: number;
 }) {
-  await db.insert(sessions).values(session);
+  // Explicitly define the fields to insert, letting database handle timestamps
+  await db.insert(sessions).values({
+    date: session.date,
+    kind: session.kind,
+    durationMins: session.durationMins,
+    notes: session.notes,
+    linkedPlanItemId: session.linkedPlanItemId,
+    linkedProblemId: session.linkedProblemId,
+    linkedOopProblemId: session.linkedOopProblemId,
+  });
 }
 
 // Get all mocks
@@ -370,16 +382,24 @@ export async function getAllMocks() {
 
 // Get mocks for date range
 export async function getMocksByDateRange(startDate: string, endDate: string) {
+  // Validate date format before creating Date objects
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
+    console.error('Invalid date format. Expected YYYY-MM-DD:', { startDate, endDate });
+    return [];
+  }
+
   const startDateObj = new Date(startDate + 'T00:00:00.000Z');
   const endDateObj = new Date(endDate + 'T23:59:59.999Z');
   
-  if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
-    console.error('Invalid date range:', { startDate, endDate });
+  // Check if dates are valid after creation
+  if (isNaN(startDateObj.valueOf()) || isNaN(endDateObj.valueOf())) {
+    console.error('Invalid date values:', { startDate, endDate });
     return [];
   }
   
-  const startTimestamp = startDateObj.getTime() / 1000;
-  const endTimestamp = endDateObj.getTime() / 1000;
+  const startTimestamp = Math.floor(startDateObj.valueOf() / 1000);
+  const endTimestamp = Math.floor(endDateObj.valueOf() / 1000);
   
   const mocksData = await db
     .select()
@@ -401,7 +421,7 @@ export async function updateMockOutcome(mockId: number, outcome: 'pass' | 'borde
       outcome,
       feedback,
       score,
-      updatedAt: Math.floor(Date.now() / 1000),
+      updatedAt: sql`(unixepoch())`,
     })
     .where(eq(mocks.id, mockId));
 
@@ -412,11 +432,11 @@ export async function updateMockOutcome(mockId: number, outcome: 'pass' | 'borde
 export async function scheduleMock(mockId: number, scheduledAt: string, interviewer?: string, duration?: number) {
   const scheduledDate = new Date(scheduledAt);
   
-  if (isNaN(scheduledDate.getTime())) {
+  if (isNaN(scheduledDate.valueOf())) {
     throw new Error(`Invalid scheduled date: ${scheduledAt}`);
   }
   
-  const scheduledTimestamp = Math.floor(scheduledDate.getTime() / 1000);
+  const scheduledTimestamp = Math.floor(scheduledDate.valueOf() / 1000);
   
   const result = await db
     .update(mocks)
@@ -424,7 +444,7 @@ export async function scheduleMock(mockId: number, scheduledAt: string, intervie
       scheduledAt: scheduledTimestamp,
       interviewer,
       duration,
-      updatedAt: Math.floor(Date.now() / 1000),
+      updatedAt: sql`(unixepoch())`,
     })
     .where(eq(mocks.id, mockId));
 
